@@ -37,12 +37,14 @@ public final class bmp_io {
 		try {
 			InputStream in = new FileInputStream(inFilename);
 			bmp = BmpReader.read_bmp(in);
-
+			
+			// Implementierung
 			width = bmp.image.getWidth(); 
 			height = bmp.image.getHeight(); 
-
+			
 			for (int x = 0; x != width; x++) 
 				for (int y = 0; y != height; y++) {
+					// Zugriff auf Pixel mit bmp.image.getRgbPixel(x, y);
 					PixelColor pOut = bmp.image.getRgbPixel(x, y);
 					System.out.printf("R: %-3d ", pOut.r);
 					System.out.printf("G: %-3d ", pOut.g);
@@ -50,11 +52,9 @@ public final class bmp_io {
 					System.out.println(); 
 				}
 			
+			// Setzen eines Pixels mit bmp.image.setRgbPixel(x, y, pc);
 				
 			
-			// Implementierung
-			// Zugriff auf Pixel mit bmp.image.getRgbPixel(x, y);
-			// Setzen eines Pixels mit bmp.image.setRgbPixel(x, y, pc);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

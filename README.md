@@ -5,4 +5,4 @@
 
 2. example terminal usage with parameters: 
 
-    java --class-path=bin wav_io.wave_io audio_in/Musik_LSG.wav audio_out/Musik_LSG.wav
+    java --class-path=bin wav_io.wave_io media_in/Musik_LSG.wav media_out/Musik_LSG.wav

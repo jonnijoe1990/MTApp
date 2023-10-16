@@ -46,12 +46,14 @@ public class wave_io {
 			// Abtastrate 
 			sampleRate = readWavFile.getSampleRate();
 			
-			for (int i = 0; i < samples; i++) {
-				System.out.println(readWavFile.sound[i]);
-			}
 
-			// Implementierung
-			// Zugriff auf die einzelne Samples mit readWavFile.sound[i]
+
+			// Implementierung print 
+			
+			//for (int i = 0; i < samples; i++) {
+				// System.out.println(readWavFile.sound[i]); // Zugriff auf die einzelne Samples mit readWavFile.sound[i]
+			//}
+
 			
 		} catch (IOException | WavFileException e1) {
 			// TODO Auto-generated catch block

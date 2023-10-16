@@ -15,7 +15,7 @@ public final class bmp_io {
 		String inFilename = null;
 		String outFilename = null;
 		
-		int hight = 0;
+		int height = 0;
 		int width = 0;
 		int bits = 0;
 		
@@ -37,6 +37,20 @@ public final class bmp_io {
 		try {
 			InputStream in = new FileInputStream(inFilename);
 			bmp = BmpReader.read_bmp(in);
+
+			width = bmp.image.getWidth(); 
+			height = bmp.image.getHeight(); 
+
+			for (int x = 0; x != width; x++) 
+				for (int y = 0; y != height; y++) {
+					PixelColor pOut = bmp.image.getRgbPixel(x, y);
+					System.out.printf("R: %-3d ", pOut.r);
+					System.out.printf("G: %-3d ", pOut.g);
+					System.out.printf("B: %-3d ", pOut.b); 
+					System.out.println(); 
+				}
+			
+				
 			
 			// Implementierung
 			// Zugriff auf Pixel mit bmp.image.getRgbPixel(x, y);

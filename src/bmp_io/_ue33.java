@@ -64,28 +64,44 @@ public final class _ue33 {
 		return data; 
 	}
 
-
 	public static void main(String[] args) throws IOException {
 		
-
-		// enter file name here 
-		String fileName = "media_in/grating_H9.bmp";
+		String inFilename = null;
+		String outFilename = null;
 		
 		BmpImage bmp = null;
 
+		if (args.length < 1) {
+			System.out.println("At least one filename specified  (" + args.length + ")"); 
+			System.exit(0);
+		}
+		
+		
+		// ****************************************************
+		// Implementierung bei einem Eingabeparamter
+		inFilename = args[0];
+		
 		try {
-			InputStream in = new FileInputStream(fileName);
+			InputStream in = new FileInputStream(inFilename);
 			bmp = BmpReader.read_bmp(in);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+			
+		if (args.length == 1) 
+			System.exit(0);
+	
+		// ***************************************************
+	    // Implementierung bei Ein- und Ausgabeparameter (speichern in eine Datei (2. Argument))
 
-		OutputStream out = new FileOutputStream(fileName);
+		outFilename = args[1];
+		OutputStream out = new FileOutputStream(outFilename);
 
+		// Speicherung 
 		try {
 			// modify bmp before write_bmp is called
-			setPixels(bmp, horizontalDownSample(bmp, 16));
+			setPixels(bmp, horizontalDownSample(bmp, 3));
 			BmpWriter.write_bmp(out, bmp);
 		}catch (IOException e) {
 			e.printStackTrace();

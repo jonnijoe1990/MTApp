@@ -69,7 +69,7 @@ public final class _ue33 {
 		
 
 		// enter file name here 
-		String fileName = "media_in/Detail_LSG.bmp";
+		String fileName = "media_in/grating_H9.bmp";
 		
 		BmpImage bmp = null;
 

@@ -80,5 +80,8 @@ public final class _ue31 {
 			horizontalOut.close();
 			verticalOut.close();
 		}
+		/*
+		 * Periodenlänge ist horizontal 63px, vertikal 69px
+		*/
 	}
 }

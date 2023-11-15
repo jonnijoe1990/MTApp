@@ -101,7 +101,10 @@ public final class _ue33 {
 		// Speicherung 
 		try {
 			// modify bmp before write_bmp is called
-			setPixels(bmp, horizontalDownSample(bmp, 3));
+
+			setPixels(bmp, horizontalDownSample(bmp, 8));
+			//setPixels(bmp, verticalDownSample(bmp, 2));
+
 			BmpWriter.write_bmp(out, bmp);
 		}catch (IOException e) {
 			e.printStackTrace();
@@ -109,4 +112,11 @@ public final class _ue33 {
 			out.close();
 		}
 	}
+	/*
+	 * Generell verändert das horizontale Downsampling die Datei grating_V3 nicht, da alle Zeilen im Bild immer den gleichen Wert haben.
+	 * Gleiches gilt für vertikales DS und grating_H9
+	 * Veränderungen im Bild sind bei genauer Betrachtung schon bei einer Periodenlänge von 1px zu sehen: Der Grauanteil im Bild ist auf 100% Zoom bereits sichtbar, 
+	 * im Originalbild sieht man in dieser Ansicht nur Schwarze u. weiße Balken.
+	 * Ab 2px Periodenlänge treten starke Veränderungen auf: Es sind Artefakte in Form großer grauer Balken zu sehen, die nicht Teil des Originalbilds sind 
+	 */
 }

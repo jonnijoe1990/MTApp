@@ -13,13 +13,14 @@ public final class _ue31 {
 		BmpImage horizontalBmp = null; 
 		BmpImage verticalBmp = null; 	
 
-		String horizontalFile = "grating_HX";
-		String verticalFile = "grating_VX"; 
+		// enter file paths w/o endings here 
+		String horizontalFile = "media_in/grating_H9";
+		String verticalFile = "media_in/grating_V3"; 
 		
 		try {
 			// try to get bmpImage objects from both bmp files 
 			InputStream horizontalIn = new FileInputStream(horizontalFile + ".bmp");
-			InputStream verticalIn = new FileInputStream(horizontalFile + ".bmp");
+			InputStream verticalIn = new FileInputStream(verticalFile + ".bmp");
 			horizontalBmp = BmpReader.read_bmp(horizontalIn); 
 			verticalBmp = BmpReader.read_bmp(verticalIn); 
 		} catch (IOException e) {

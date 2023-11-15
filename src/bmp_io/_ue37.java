@@ -27,52 +27,71 @@ public final class _ue37 {
 	}
 
 	private static PixelColor reduceColorBits(PixelColor source, int exp) {
-		double doubleExp = Math.pow(2, exp); 
-		int intExp = (int) doubleExp; 
+		exp = (int) Math.pow(2, exp); 
 		// perform int devision with exp
 		// multiply the result with exp for compensation of brightness
-		// cast the result to int
-		
-		source.r = source.r - ((int) (source.r / intExp * doubleExp)); 
-		source.g = source.g - ((int) (source.g / intExp * doubleExp)); 
-		source.b = source.b - ((int) (source.b / intExp * doubleExp)); 
-
-		double doubleAmplifyExp = Math.pow(2, 8 - exp - 1); 
-		// multiply with amplifier
-		// devide by 2, add 127 
-		// cast the result to int
-	
-		source.r = (int) (source.r * doubleAmplifyExp / 2 + 127);
-		source.g = (int) (source.g * doubleAmplifyExp / 2 + 127);
-		source.b = (int) (source.b * doubleAmplifyExp / 2 + 127);
-
-		return source; 
+		return new PixelColor(
+			source.r / exp * exp,
+			source.g / exp * exp, 
+			source.b / exp * exp 
+		); 
 	}
+
+
+	private static PixelColor getErrorPixel(PixelColor source, int exp) {
+		PixelColor reduced = reduceColorBits(source, exp); 
+		exp = (int) Math.pow(2, 8 - exp - 1); 
+
+		return new PixelColor(
+			(source.r - reduced.r) * exp / 2 + 127, 
+			(source.g - reduced.g) * exp / 2 + 127, 
+			(source.b - reduced.b) * exp / 2 + 127
+		);
+	}
+
 	public static void main(String[] args) throws IOException {
 		
-
-		// enter file name here 
-		String fileName = "media_in/Detail_LSG.bmp";
-	
+		String inFilename = null;
+		String outFilename = null;
+		
 		BmpImage bmp = null;
 
+		if (args.length < 1) {
+			System.out.println("At least one filename specified  (" + args.length + ")"); 
+			System.exit(0);
+		}
+		
+		
+		// ****************************************************
+		// Implementierung bei einem Eingabeparamter
+		inFilename = args[0];
+		
 		try {
-			InputStream in = new FileInputStream(fileName);
+			InputStream in = new FileInputStream(inFilename);
 			bmp = BmpReader.read_bmp(in);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+			
+		if (args.length == 1) 
+			System.exit(0);
+	
+		// ***************************************************
+	    // Implementierung bei Ein- und Ausgabeparameter (speichern in eine Datei (2. Argument))
 
-		OutputStream out = new FileOutputStream(fileName);
+		outFilename = args[1];
+		OutputStream out = new FileOutputStream(outFilename);
 
+
+		// Speicherung 
 		try {
 			// get data 
 			PixelColor[][] data = getPixels(bmp); 
 			// reduce bits
 			for (int x = 0; x != data.length; x++) {
 				for (int y = 0; y != data[x].length; y++) {
-					data[x][y] = reduceColorBits(data[x][y], 6);
+					data[x][y] = getErrorPixel(data[x][y], 6); 
 				}
 			}
 			// set data 

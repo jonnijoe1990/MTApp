@@ -45,24 +45,24 @@ public final class _ue33 {
 		return data; 
 	}
 
-	private static PixelColor[][] horizontalDownSample(BmpImage source, int pixelsToSample) {
-		// get data 
-		PixelColor[][] data = getPixels(source); 
-		int lastIndex = data.length - 1; 
-		for (int x = 0; x < data.length; x += pixelsToSample + 1) {
-			for (int y = 0; y < data[x].length; y++) { 
-				int valueIndex = (x + pixelsToSample) > lastIndex ? lastIndex : x + pixelsToSample; 
-				for (int k = 0; k < pixelsToSample; k++) {
-					int overwriteIndex = x + k; 
-					if (overwriteIndex <= lastIndex) {
-						data[x+k][y] = data[valueIndex][y];
-					}
+private static PixelColor[][] horizontalDownSample(BmpImage source, int pixelsToSample) {
+	// get data 
+	PixelColor[][] data = getPixels(source); 
+	int lastIndex = data.length - 1; 
+	for (int x = 0; x < data.length; x += pixelsToSample + 1) {
+		for (int y = 0; y < data[x].length; y++) { 
+			int valueIndex = (x + pixelsToSample) > lastIndex ? lastIndex : x + pixelsToSample; 
+			for (int k = 0; k < pixelsToSample; k++) {
+				int overwriteIndex = x + k; 
+				if (overwriteIndex <= lastIndex) {
+					data[x+k][y] = data[valueIndex][y];
 				}
-
 			}
+
 		}
-		return data; 
 	}
+	return data; 
+}
 
 	public static void main(String[] args) throws IOException {
 		
@@ -102,7 +102,7 @@ public final class _ue33 {
 		try {
 			// modify bmp before write_bmp is called
 
-			setPixels(bmp, horizontalDownSample(bmp, 8));
+			setPixels(bmp, horizontalDownSample(bmp, 4));
 			//setPixels(bmp, verticalDownSample(bmp, 2));
 
 			BmpWriter.write_bmp(out, bmp);

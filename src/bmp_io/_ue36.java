@@ -27,34 +27,52 @@ public final class _ue36 {
 	}
 
 	private static PixelColor reduceColorBits(PixelColor source, int exp) {
-		double doubleExp = Math.pow(2, exp); 
-		int intExp = (int) doubleExp; 
+		exp = (int) Math.pow(2, exp); 
 		// perform int devision with exp
 		// multiply the result with exp for compensation of brightness
-		// cast the result to int
-		source.r = (int) (source.r / intExp * doubleExp); 
-		source.g = (int) (source.g / intExp * doubleExp); 
-		source.b = (int) (source.b / intExp * doubleExp); 
-		return source; 
+		return new PixelColor(
+			source.r / exp * exp,
+			source.g / exp * exp, 
+			source.b / exp * exp 
+		); 
 	}
+
 	public static void main(String[] args) throws IOException {
 		
-
-		// enter file name here 
-		String fileName = "media_in/Detail_LSG.bmp";
-	
+		String inFilename = null;
+		String outFilename = null;
+		
 		BmpImage bmp = null;
 
+		if (args.length < 1) {
+			System.out.println("At least one filename specified  (" + args.length + ")"); 
+			System.exit(0);
+		}
+		
+		
+		// ****************************************************
+		// Implementierung bei einem Eingabeparamter
+		inFilename = args[0];
+		
 		try {
-			InputStream in = new FileInputStream(fileName);
+			InputStream in = new FileInputStream(inFilename);
 			bmp = BmpReader.read_bmp(in);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+			
+		if (args.length == 1) 
+			System.exit(0);
+	
+		// ***************************************************
+	    // Implementierung bei Ein- und Ausgabeparameter (speichern in eine Datei (2. Argument))
 
-		OutputStream out = new FileOutputStream(fileName);
+		outFilename = args[1];
+		OutputStream out = new FileOutputStream(outFilename);
 
+
+		// Speicherung 
 		try {
 			// get data 
 			PixelColor[][] data = getPixels(bmp); 
@@ -73,4 +91,8 @@ public final class _ue36 {
 			out.close();
 		}
 	}
+	/*
+	 * Je geringer die Bitzahl, desto weniger Farben können dargestellt werden. Der Wertebereich wird verkleinert, wodurch die Anzahl an darstellbaren Farben reduziert wird.
+	 * Deswegen werden die Farbübergänge gröber dargestellt und die Übergaenge fallen stärker auf 
+	 */
 }

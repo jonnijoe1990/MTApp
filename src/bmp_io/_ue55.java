@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public final class _ue52 {
+public final class _ue55 {
 
 	private static void setPixels(BmpImage bmp, PixelColor[][] pixels) {
 		for(int x = 0; x != pixels.length; x++) {
@@ -26,38 +26,19 @@ public final class _ue52 {
 		return ret; 
 	}
 
-	/*
-	 * calculates the result of a 3x3 and a 3x1 matrix
-	 */
-	private static PixelColor matrixMulti(double[][] twoDim, double[] oneDim) {
-		double[] res = new double[3];
-		for (int i = 0; i < 3; i++) {
-			res[i] = 0;
-			for (int k = 0; k < 3; k++) {
-				res[i] += twoDim[i][k] * oneDim[k];
-			}
-		}
-		return new PixelColor((int) res[0], (int) res[1], (int) res[2]); 
-	}
-
-	private static PixelColor rgbToYcbcr(PixelColor px) {
-		// create constant conversion matrix
-		double[][] multMatrix = new double[][]{
-			{0.299, 0.587, 0.114},
-			{-0.169, -0.331, 0.5},
-			{0.5, -0.419, -0.081}
-		};
-		// create matrix for source pixel
-		double[] pxMatrix = new double[]{(double) px.r, (double) px.g, (double) px.b};
-
-		// get result of multiplication, add constant values and return
-		PixelColor multRes = matrixMulti(multMatrix, pxMatrix);
+	private static PixelColor setContrastAndBrightness(PixelColor px, double k, double h) {
+		int r = (int) (k * (px.r - 128) + 128 + h);
+		int g = (int) (k * (px.g - 128) + 128 + h);
+		int b = (int) (k * (px.b - 128) + 128 + h);
+		
 		return new PixelColor(
-			multRes.r,
-			multRes.g + 128,
-			multRes.b + 128
+			Math.min(255, Math.max(0,r)),
+			Math.min(255, Math.max(0,g)),
+			Math.min(255, Math.max(0,b))
 		);
 	}
+	
+
 
 	public static void main(String[] args) throws IOException {
 		
@@ -101,13 +82,7 @@ public final class _ue52 {
 			// convert
 			for (int x = 0; x != data.length; x++) {
 				for (int y = 0; y != data[x].length; y++) {
-					data[x][y] = rgbToYcbcr(data[x][y]); 
-					// filter for one channel
-					data[x][y] = new PixelColor(
-						data[x][y].r, 
-						data[x][y].g,
-						data[x][y].b
-					);
+					data[x][y] = setContrastAndBrightness(data[x][y], -0.2, 0); 
 				}
 			}
 			// set data 
@@ -118,5 +93,9 @@ public final class _ue52 {
 		} finally {
 			out.close();
 		}
+		/*
+		 * Eine Konstrast kleiner 1 bewirkt eine Stauchung der Verteilung um den Mittelwert der Helligkeit (255/2). 
+		 * Eine Kontrast größer 1 bewirkt eine Streckung der Verteilung, sodass die Frequenz der Helligkeitsveränderungen ansteigt.
+		 */
 	}
 }

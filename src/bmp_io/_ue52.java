@@ -26,38 +26,45 @@ public final class _ue52 {
 		return ret; 
 	}
 
-	/*
-	 * calculates the result of a 3x3 and a 3x1 matrix
-	 */
-	private static PixelColor matrixMulti(double[][] twoDim, double[] oneDim) {
-		double[] res = new double[3];
-		for (int i = 0; i < 3; i++) {
-			res[i] = 0;
-			for (int k = 0; k < 3; k++) {
-				res[i] += twoDim[i][k] * oneDim[k];
-			}
-		}
-		return new PixelColor((int) res[0], (int) res[1], (int) res[2]); 
-	}
+	private static double[][] rgbToYcbcrMatrix = {
+		{0.299, 0.587, 0.114},
+		{-0.169, -0.331, 0.5},
+		{0.5, -0.419, -0.081}
+	};
 
-	private static PixelColor rgbToYcbcr(PixelColor px) {
-		// create constant conversion matrix
-		double[][] multMatrix = new double[][]{
-			{0.299, 0.587, 0.114},
-			{-0.169, -0.331, 0.5},
-			{0.5, -0.419, -0.081}
-		};
-		// create matrix for source pixel
-		double[] pxMatrix = new double[]{(double) px.r, (double) px.g, (double) px.b};
-
-		// get result of multiplication, add constant values and return
-		PixelColor multRes = matrixMulti(multMatrix, pxMatrix);
+	private static PixelColor rgbToY(PixelColor px) {
 		return new PixelColor(
-			multRes.r,
-			multRes.g + 128,
-			multRes.b + 128
+			(int) (px.r * rgbToYcbcrMatrix[0][0]), 
+			(int) (px.g * rgbToYcbcrMatrix[0][1]) + 128, 
+			(int) (px.b * rgbToYcbcrMatrix[0][2]) + 128 
 		);
 	}
+
+	private static PixelColor rgbToCb(PixelColor px) {
+		return new PixelColor(
+			(int) (px.r * rgbToYcbcrMatrix[1][0] + 128), 
+			(int) (px.g * rgbToYcbcrMatrix[1][1] + 128), 
+			(int) (px.b * rgbToYcbcrMatrix[1][2] + 128) 
+		);
+	}
+
+	private static PixelColor rgbToCr(PixelColor px) {
+		return new PixelColor(
+			(int) (px.r * rgbToYcbcrMatrix[2][0] + 128), 
+			(int) (px.g * rgbToYcbcrMatrix[2][1] + 128), 
+			(int) (px.b * rgbToYcbcrMatrix[2][2] + 128) 
+		);
+	}
+
+	private static PixelColor rgbToYcbr(PixelColor px) {
+		return new PixelColor(
+			(int) (px.r * rgbToYcbcrMatrix[0][0] + px.g * rgbToYcbcrMatrix[0][1] + px.b * rgbToYcbcrMatrix[0][2]),
+			(int) (px.r * rgbToYcbcrMatrix[1][0] + px.g * rgbToYcbcrMatrix[1][1] + px.b * rgbToYcbcrMatrix[1][2]) + 128,
+			(int) (px.r * rgbToYcbcrMatrix[2][0] + px.g * rgbToYcbcrMatrix[2][1] + px.b * rgbToYcbcrMatrix[2][2]) + 128
+
+		);
+	}
+	
 
 	public static void main(String[] args) throws IOException {
 		
@@ -101,13 +108,7 @@ public final class _ue52 {
 			// convert
 			for (int x = 0; x != data.length; x++) {
 				for (int y = 0; y != data[x].length; y++) {
-					data[x][y] = rgbToYcbcr(data[x][y]); 
-					// filter for one channel
-					data[x][y] = new PixelColor(
-						data[x][y].r, 
-						data[x][y].g,
-						data[x][y].b
-					);
+					data[x][y] = rgbToCb(data[x][y]); 
 				}
 			}
 			// set data 

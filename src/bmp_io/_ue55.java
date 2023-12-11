@@ -82,7 +82,7 @@ public final class _ue55 {
 			// convert
 			for (int x = 0; x != data.length; x++) {
 				for (int y = 0; y != data[x].length; y++) {
-					data[x][y] = setContrastAndBrightness(data[x][y], -0.2, 0); 
+					data[x][y] = setContrastAndBrightness(data[x][y], -1, 0); 
 				}
 			}
 			// set data 

@@ -35,8 +35,8 @@ public final class _ue52 {
 	private static PixelColor rgbToY(PixelColor px) {
 		return new PixelColor(
 			(int) (px.r * rgbToYcbcrMatrix[0][0]), 
-			(int) (px.g * rgbToYcbcrMatrix[0][1]) + 128, 
-			(int) (px.b * rgbToYcbcrMatrix[0][2]) + 128 
+			(int) (px.g * rgbToYcbcrMatrix[0][1]), 
+			(int) (px.b * rgbToYcbcrMatrix[0][2]) 
 		);
 	}
 

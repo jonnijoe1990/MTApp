@@ -33,10 +33,11 @@ public final class _ue52 {
 	};
 
 	private static PixelColor rgbToY(PixelColor px) {
+		int yVal = (int) (px.r * rgbToYcbcrMatrix[0][0] + px.g * rgbToYcbcrMatrix[0][1] + px.b * rgbToYcbcrMatrix[0][2]);
 		return new PixelColor(
-			(int) (px.r * rgbToYcbcrMatrix[0][0]), 
-			(int) (px.g * rgbToYcbcrMatrix[0][1]), 
-			(int) (px.b * rgbToYcbcrMatrix[0][2]) 
+			yVal,
+			yVal,
+			yVal
 		);
 	}
 
@@ -108,7 +109,7 @@ public final class _ue52 {
 			// convert
 			for (int x = 0; x != data.length; x++) {
 				for (int y = 0; y != data[x].length; y++) {
-					data[x][y] = rgbToCb(data[x][y]); 
+					data[x][y] = rgbToY(data[x][y]); 
 				}
 			}
 			// set data 

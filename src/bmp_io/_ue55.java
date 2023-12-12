@@ -71,7 +71,7 @@ public final class _ue55 {
 		// ***************************************************
 	    // Implementierung bei Ein- und Ausgabeparameter (speichern in eine Datei (2. Argument))
 
-		outFilename = args[1];
+		outFilename = args[1] + args[2] + ".bmp";
 		OutputStream out = new FileOutputStream(outFilename);
 
 
@@ -82,7 +82,7 @@ public final class _ue55 {
 			// convert
 			for (int x = 0; x != data.length; x++) {
 				for (int y = 0; y != data[x].length; y++) {
-					data[x][y] = setContrastAndBrightness(data[x][y], -1, 0); 
+					data[x][y] = setContrastAndBrightness(data[x][y], Double.parseDouble(args[2]), 0); 
 				}
 			}
 			// set data 

@@ -1,9 +1,8 @@
 package wav_io;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
-public class _ue61 {
+public class _ue64 {
 
 	public static void main(String[] args) {
 	
@@ -49,12 +48,23 @@ public class _ue61 {
 
 // Implementierung print 
 
-double[] dbFactors = new double[13];
-dbFactors[6] = 1.995262315;
-dbFactors[9] = 2.818382931;
-dbFactors[12] = 3.981071706;
+short[] filter = new short[samples];
 
-double scalar = dbFactors[Integer.parseInt(args[2])];
+for (int i = 0; i < samples; i++) {
+	// cast to int, cuts of decimal part
+	int index = i - numChannels;
+	// prevent out of bounds
+	if (index > 0) 
+		filter[i] = (short) (readWavFile.sound[index] * 0.45);
+}
+	
+	
+
+int sign = -1; // use low pass by default 
+if (args.length == 3) 
+	// use high pass if a 3rd argument is emitted
+	sign = 1;
+
 
 for (int i = 0; i < samples; i++) {
 	readWavFile.sound[i] =
@@ -63,12 +73,17 @@ for (int i = 0; i < samples; i++) {
 			-32768, 
 			Math.min(
 				32767,
-				readWavFile.sound[i] * scalar
+				0.5 * readWavFile.sound[i] + sign * filter[i]
 			)
 		);
-}
+} 
 
-// 
+/*
+ * Der Frequenzverlauf, der eine "kurve" nach unten beinhält ist der Lowpass-Filter (Niedrige Frequenzen dringen durch).
+ * Analog dazu ist der Frequenzverlauf mit der steigenden Kurve ein Highpass-Filter
+ */
+
+//
 			
 		} catch (IOException | WavFileException e1) {
 			// TODO Auto-generated catch block

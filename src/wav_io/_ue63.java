@@ -2,8 +2,9 @@ package wav_io;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.Socket;
 
-public class _ue61 {
+public class _ue63 {
 
 	public static void main(String[] args) {
 	
@@ -49,13 +50,22 @@ public class _ue61 {
 
 // Implementierung print 
 
-double[] dbFactors = new double[13];
-dbFactors[6] = 1.995262315;
-dbFactors[9] = 2.818382931;
-dbFactors[12] = 3.981071706;
+short[] echo = new short[samples];
+double n = (Integer.parseInt(args[2]) / 1000.0 * sampleRate);
 
-double scalar = dbFactors[Integer.parseInt(args[2])];
-
+for (int i = 0; i < samples; i++) {
+	// cast to int, cuts of decimal part
+	int index = (int) (i - numChannels * n);
+	// prevent channel hop for stereo 
+	if (numChannels == 2)
+		if (i % 2 == 0 && index % 2 != 0 || i % 2 != 0 && index % 2 == 0) 
+			// increment to next index if channels are unequal
+			index++;
+	// prevent out of bounds
+	if (index >= 0) 
+		echo[i] = (short) (readWavFile.sound[index] * 0.6);
+}
+System.out.println("testsd");
 for (int i = 0; i < samples; i++) {
 	readWavFile.sound[i] =
 		// prevent out of bounds
@@ -63,12 +73,12 @@ for (int i = 0; i < samples; i++) {
 			-32768, 
 			Math.min(
 				32767,
-				readWavFile.sound[i] * scalar
+				readWavFile.sound[i] + echo[i]
 			)
 		);
 }
 
-// 
+//
 			
 		} catch (IOException | WavFileException e1) {
 			// TODO Auto-generated catch block

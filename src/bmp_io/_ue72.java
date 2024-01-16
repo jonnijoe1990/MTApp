@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public final class _ue71 {
+public final class _ue72 {
+
 
 	/**
 	 * set the pixels of a BmpImage to a 2d pixel array
@@ -63,7 +64,7 @@ public final class _ue71 {
         double[][][][][] res = new double[width][height][3][3][3];
         for (int i = 0; i != width; i++) {
             for (int k = 0; k != height; k++) {
-				// for each pixel: loop over our 3x3 kernel
+				// for each pixel: loop over our 3x3 kernel, sum up results
                 for (int ki = -1; ki <= 1; ki++) {
 					for (int kk = -1; kk <= 1; kk++) {
                         int srcI = i + ki;
@@ -83,7 +84,6 @@ public final class _ue71 {
         return res;
     }
 
-	// implementation
 
 	/**
 	 * apply Low-pass filter to bmp
@@ -120,6 +120,74 @@ public final class _ue71 {
 					(int) (g / 9.0),
 					(int) (b / 9.0)
 				);
+			}
+		}
+		setPixels(bmp, pixels);
+	}
+
+	/**
+	 * set contrast and brightness for a single pixel
+	 * @param px
+	 * @param k
+	 * @param h
+	 * @return adjusted pixel
+	 */
+	private static PixelColor setContrastAndBrightness(PixelColor px, double k, double h) {
+		int r = (int) (k * (px.r - 128) + 128 + h);
+		int g = (int) (k * (px.g - 128) + 128 + h);
+		int b = (int) (k * (px.b - 128) + 128 + h);
+		return new PixelColor(r, g, b);
+	}
+
+	/**
+	 * subtract a pixel from another
+	 * @param value
+	 * @param sub
+	 * @return result pixel
+	 */
+	private static PixelColor getDiffPixel(PixelColor value, PixelColor sub) {
+		return new PixelColor(
+			value.r - sub.r,
+			value.g - sub.g,
+			value.b - sub.b
+		);
+	}
+
+	// implementation
+
+	
+	/**
+	 * map pixelcolor to its bounds [0, 255]
+	 * @param src
+	 * @return mapped pixelColor
+	*/
+	private static PixelColor mapToBounds(PixelColor src) {
+		return new PixelColor(
+			Math.min(255, Math.max(0,src.r)),
+			Math.min(255, Math.max(0,src.g)),
+			Math.min(255, Math.max(0,src.b))
+		);
+	}
+
+	private static void applyDiffToFilter(BmpImage bmp) {
+		// get original pixels
+		PixelColor[][] pixels = getPixels(bmp);
+		// apply lowpass filter
+		applyLpFilter(bmp);
+		// get filtered pixels
+		PixelColor[][] filtered = getPixels(bmp);
+		for (int i = 0; i < pixels.length; i++) {
+			for (int k = 0; k < pixels[0].length; k++) {
+				/*
+				 * subtract filtered from original
+				 * set contrast 0.8, brightness +100
+				 * map to [0,255] bounds
+				*/
+				pixels[i][k] = mapToBounds(setContrastAndBrightness(
+					getDiffPixel(pixels[i][k], filtered[i][k]), 
+					0.8, 
+					50
+				));
 			}
 		}
 		setPixels(bmp, pixels);
@@ -162,7 +230,7 @@ public final class _ue71 {
 
 		// Speicherung 
 		try {
-			applyLpFilter(bmp); 
+			applyDiffToFilter(bmp); 
 			BmpWriter.write_bmp(out, bmp);
 		}catch (IOException e) {
 			e.printStackTrace();

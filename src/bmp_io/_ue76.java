@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public final class _ue71 {
+public final class _ue76 {
 
 	/**
 	 * set the pixels of a BmpImage to a 2d pixel array
@@ -52,10 +52,10 @@ public final class _ue71 {
 	}
 
 	/**
-	 * Generates a 3x3 grid, containing the components of the product of kernel and src for each pixel
+	 * Generates a 3x3 grid, containing the product of kernel and src for each pixel
 	 * @param src 2d-PixelColor-array
 	 * @param kernel assumed to be 3x3
-	 * @return 5d-double-array (2 for pixels, 2 for kernel grid, 1 for components)
+	 * @return 4d-array (2x2)
 	 */
     private static double[][][][][] getPixelProductGridByKernel(PixelColor[][] src, double[][] kernel) {
         int width = src.length; 
@@ -63,7 +63,7 @@ public final class _ue71 {
         double[][][][][] res = new double[width][height][3][3][3];
         for (int i = 0; i != width; i++) {
             for (int k = 0; k != height; k++) {
-				// for each pixel: loop over our 3x3 kernel
+				// for each pixel: loop over our 3x3 kernel, sum up results
                 for (int ki = -1; ki <= 1; ki++) {
 					for (int kk = -1; kk <= 1; kk++) {
                         int srcI = i + ki;
@@ -83,22 +83,40 @@ public final class _ue71 {
         return res;
     }
 
-	// implementation
+	
 
 	/**
-	 * apply Low-pass filter to bmp
-	 * @param pixels
-	 * @param kernel
+	 * map pixelcolor to its bounds [0, 255]
+	 * @param src
+	 * @return mapped pixelColor
 	 */
-	private static void applyLpFilter(BmpImage bmp) {
+	private static PixelColor mapToBounds(PixelColor src) {
+		return new PixelColor(
+			Math.min(255, Math.max(0,src.r)),
+			Math.min(255, Math.max(0,src.g)),
+			Math.min(255, Math.max(0,src.b))
+		);
+	}
+
+	
+	// implementation
+
+	private static void applySobelFilter(BmpImage bmp) {
+		/*
 		double[][] kernel = new double[][]{
-			{1, 1, 1},
-			{1, 1, 1},
-			{1, 1, 1}
+			{-1, 0, 1},
+			{-2, 0, 2},
+			{-1, 0, 1}
+		};
+		*/
+		double[][] kernel = new double[][]{
+			{-1, -2, -1},
+			{0, 0, 0},
+			{1, 2, 1}
 		};
 		// get pixels from bmp
 		PixelColor[][] pixels = getPixels(bmp);
-		// get 3x3 grids of components of pixels, with double values for each kernel field
+		// get pixel sums by kernel
 		double[][][][][] gridsByPixels = getPixelProductGridByKernel(pixels, kernel);
 		for (int i = 0; i < gridsByPixels.length; i++) {
 			for (int k = 0; k < gridsByPixels[0].length; k++) {
@@ -114,12 +132,12 @@ public final class _ue71 {
 						b += gridOfComponents[ki][kk][2];
 					}
 				}
-				// divide by number of sumands, write in pixels
-				pixels[i][k] = new PixelColor(
-					(int) (r / 9.0),
-					(int) (g / 9.0),
-					(int) (b / 9.0)
-				);
+				// map to bounds
+				pixels[i][k] = mapToBounds(new PixelColor(
+					(int) r,
+					(int) g,
+					(int) b
+				));
 			}
 		}
 		setPixels(bmp, pixels);
@@ -162,7 +180,7 @@ public final class _ue71 {
 
 		// Speicherung 
 		try {
-			applyLpFilter(bmp); 
+			applySobelFilter(bmp); 
 			BmpWriter.write_bmp(out, bmp);
 		}catch (IOException e) {
 			e.printStackTrace();

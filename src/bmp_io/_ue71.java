@@ -8,6 +8,11 @@ import java.io.OutputStream;
 
 public final class _ue71 {
 
+	/**
+	 * set the pixels of a BmpImage to a 2d pixel array
+	 * @param bmp
+	 * @param pixels
+	 */
 	private static void setPixels(BmpImage bmp, PixelColor[][] pixels) {
 		for(int x = 0; x != pixels.length; x++) {
 			for(int y = 0; y != pixels[x].length; y++) {
@@ -16,6 +21,11 @@ public final class _ue71 {
 		}
 	}
 
+	/**
+	 * set the pixels of a BmpImage to a 2d pixel array
+	 * @param bmp
+	 * @return get a 2d pixel array from a BmpImage
+	 */
 	private static PixelColor[][] getPixels(BmpImage bmp) {
 		PixelColor[][] ret = new PixelColor[bmp.image.getWidth()][bmp.image.getHeight()]; 
 		for(int x = 0; x != bmp.image.getWidth(); x++) {
@@ -24,6 +34,12 @@ public final class _ue71 {
 			}
 		}
 		return ret; 
+	}
+
+	private static double sumThreeByThree(double[][] src) {
+		return src[0][0] + src[0][1] + src[0][2] /
+			+ src[1][0] + src[1][1] + src[1][2] /
+			+ src[2][0] + src[2][1] + src[2][2];
 	}
 
 	/**
@@ -42,21 +58,20 @@ public final class _ue71 {
 	}
 
 	/**
-	 * Generates array of pixelsums
-	 * @param bmp source bmp
+	 * Generates a 3x3 grid, containing the product of kernel and src for each pixel
+	 * @param src 2d-PixelColor-array
 	 * @param kernel assumed to be 3x3
-	 * @return array with pixelsum for each pixel
+	 * @return 4d-array (2x2)
 	 */
-    private static PixelColor[][] getPixelSumsByKernel(BmpImage bmp, Double[][] kernel) {
-        PixelColor[][] src = getPixels(bmp);
+    private static double[][][][][] getPixelProductGridByKernel(PixelColor[][] src, double[][] kernel) {
         int width = src.length; 
         int height = src[0].length;
-        PixelColor[][] res = new PixelColor[width][height];
+        double[][][][][] res = new double[width][height][3][3][3];
         for (int i = 0; i != width; i++) {
             for (int k = 0; k != height; k++) {
-				// for each pixel: loop over our 3x3 kernel
+				// for each pixel: loop over our 3x3 kernel, sum up results
                 for (int ki = -1; ki <= 1; ki++) {
-                    for (int kk = -1; kk <= 1; kk++) {
+					for (int kk = -1; kk <= 1; kk++) {
                         int srcI = i + ki;
                         int srcK = k + kk; 
 						PixelColor refColor = handleBorder(src, srcI, srcK);
@@ -64,11 +79,9 @@ public final class _ue71 {
 						int kernelI = ki + 1;
 						int kernelK = kk + 1;
 						// add product of multiplication of refColor and kernel value to our pixel result
-						res[i][k] = new PixelColor(
-							res[i][k].r + refColor.r * kernel[kernelI][kernelK],
-							res[i][k].g + refColor.g * kernel[kernelI][kernelK],
-							res[i][k].b + refColor.b * kernel[kernelI][kernelK]
-						);
+						res[i][k][kernelI][kernelK][0] = (refColor.r * kernel[kernelI][kernelK]); 
+						res[i][k][kernelI][kernelK][1] = (refColor.g * kernel[kernelI][kernelK]); 
+						res[i][k][kernelI][kernelK][2] = (refColor.b * kernel[kernelI][kernelK]); 
                     }
                 }
             } 
@@ -76,19 +89,119 @@ public final class _ue71 {
         return res;
     }
 
-	private static PixelColor[][] lowpassFilter(BmpImage bmp, Double[][] kernel) {
-		PixelColor sums = getPixelSumsByKernel(bmp, kernel);
-		for (int i = 0; i < sums.length; i++) {
-			for (int k = 0; k < sums[0].length; k++) {
-				sums[i][k] = new PixelColor(
-					sums[i][k].r / 9.0,
-					sums[i][k].g / 9.0,
-					sums[i][k].b / 9.0
+	/**
+	 * apply Low-pass filter to bmp
+	 * @param pixels
+	 * @param kernel
+	 */
+	private static void applyLpFilter(BmpImage bmp) {
+		double[][] kernel = new double[][]{
+			{1, 1, 1},
+			{1, 1, 1},
+			{1, 1, 1}
+		};
+		// get pixels from bmp
+		PixelColor[][] pixels = getPixels(bmp);
+		// get 3x3 grids of components of pixels, with double values for each kernel field
+		double[][][][][] gridsByPixels = getPixelProductGridByKernel(pixels, kernel);
+		for (int i = 0; i < gridsByPixels.length; i++) {
+			for (int k = 0; k < gridsByPixels[0].length; k++) {
+				double[][][] gridOfComponents = gridsByPixels[i][k];
+				// init rgb sums at 0
+				double r, g, b;
+				r = g = b = 0;
+				// sum up grid
+				for (int ki = 0; ki < 3; ki++) {
+					for (int kk = 0; kk < 3; kk++) {
+						r += gridOfComponents[ki][kk][0];
+						g += gridOfComponents[ki][kk][1];
+						b += gridOfComponents[ki][kk][2];
+					}
+				}
+				// divide by number of sumands, write in pixels
+				pixels[i][k] = new PixelColor(
+					(int) (r / 9.0),
+					(int) (g / 9.0),
+					(int) (b / 9.0)
 				);
 			}
 		}
-		return sums;
+		setPixels(bmp, pixels);
 	}
+
+	
+
+	/**
+	 * set contrast and brightness for a single pixel, map result to bounds [0, 255]
+	 * @param px
+	 * @param k
+	 * @param h
+	 * @return adjusted pixel
+	 */
+	private static PixelColor setContrastAndBrightness(PixelColor px, double k, double h) {
+		int r = (int) (k * (px.r - 128) + 128 + h);
+		int g = (int) (k * (px.g - 128) + 128 + h);
+		int b = (int) (k * (px.b - 128) + 128 + h);
+		return mapToBounds(new PixelColor(r, g, b));
+	}
+
+	/**
+	 * subtract a pixel from another, map result to bounds [0, 255] 
+	 * @param value
+	 * @param sub
+	 * @return result pixel
+	 */
+	private static PixelColor getDiffPixel(PixelColor value, PixelColor sub) {
+		return mapToBounds(new PixelColor(
+			value.r - sub.r,
+			value.g - sub.g,
+			value.b - sub.b
+		));
+	}
+
+	/**
+	 * map pixelcolor to its bounds [0, 255]
+	 * @param src
+	 * @return mapped pixelColor
+	 */
+	private static PixelColor mapToBounds(PixelColor src) {
+		return new PixelColor(
+			Math.min(255, Math.max(0,src.r)),
+			Math.min(255, Math.max(0,src.g)),
+			Math.min(255, Math.max(0,src.b))
+		);
+	}
+    /*
+	private static void applyHpFilter(BmpImage bmp) {
+		double[][] kernel = new double[][]{
+			{0, -1, 0},
+			{-1, 6, -1},
+			{0, -1, 0}
+		};
+		// get pixels from bmp
+		PixelColor[][] pixels = getPixels(bmp);
+		// get pixel sums by kernel
+		PixelColor[][] sums = getPixelSumsByKernel(pixels, kernel);
+		// get kernel sum
+		double kernelSum = 
+			kernel[0][0] + kernel[0][1] + kernel[0][2] /
+			+ kernel[1][0] + kernel[1][1] + kernel[1][2] /
+			+ kernel[2][0] + kernel[2][1] + kernel[2][2];
+		for (int i = 0; i < sums.length; i++) {
+			for (int k = 0; k < sums[0].length; k++) {
+				// divide by kernel sum, map to bounds
+				sums[i][k] = mapToBounds(new PixelColor(
+					(int) (sums[i][k].r / kernelSum),
+					(int) (sums[i][k].g / kernelSum),
+					(int) (sums[i][k].b / kernelSum)
+				));
+			}
+		}
+		setPixels(bmp, sums);
+	}
+	*/
+
+
 
 	public static void main(String[] args) throws IOException {
 		
@@ -127,10 +240,7 @@ public final class _ue71 {
 
 		// Speicherung 
 		try {
-			// get data 
-			PixelColor[][] sourceData = ; 
-			// set data 
-			setPixels(bmp, lowpassFilter(getPixels(bmp))); 
+			applyLpFilter(bmp); 
 			BmpWriter.write_bmp(out, bmp);
 		}catch (IOException e) {
 			e.printStackTrace();
